@@ -9,7 +9,7 @@
 - ✍️ 输入任意文本，生成 Huffman 编码
 - 📋 支持编码表展示、字符频率表与图形化柱状图
 - 🌳 可视化展示 Huffman 树结构
-- 🔁 支持手动译码（输入编码后恢复原文）
+- 🔁 支持手动译码
 - 📤 编码结果支持复制 / 下载
 - 🌐 一键浏览器启动（打包后 `launcher.exe` 即可运行）
 
@@ -104,7 +104,8 @@ pip install pyinstaller
 
 ## 📬 联系作者
 
-如有建议、BUG 反馈或合作意向，欢迎联系：
+如有建议、反馈或合作，欢迎联系作者。
 
 - GitHub: [@thewindsing](https://github.com/thewindsing)
 - Email: thewindsing@stud.tjut.edu.cn
+- Blog: [thewindsing.blog](https://thewindsing.blog)
