@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Huffman 编码可视化</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --background: #f8f9fa;
+      --text: #212529;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text);
+      background: white;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .container {
+      display: flex;
+    }
+    aside {
+      width: 250px;
+      background: var(--background);
+      padding: 1rem;
+      height: 100vh;
+      overflow-y: auto;
+      position: sticky;
+      top: 72px;
+      border-right: 1px solid #ddd;
+    }
+    aside h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    aside details summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    aside a {
+      display: block;
+      margin-left: 1rem;
+      color: var(--primary);
+      text-decoration: none;
+      margin-bottom: 0.3rem;
+    }
+    main {
+      flex: 1;
+      padding: 2rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.75em;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      resize: vertical;
+    }
+    .btn {
+      display: inline-block;
+      margin: 0.5em 1em 0.5em 0;
+      padding: 0.5em 1.5em;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .btn:hover {
+      background: #084298;
+    }
+    .section {
+      margin-top: 3rem;
+    }
+    .section h2 {
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.25em;
+    }
+    .block-text {
+      background: #f1f3f5;
+      padding: 1em;
+      border-radius: 6px;
+      word-break: break-all;
+      margin-top: 0.5em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 0.75em;
+      text-align: center;
+    }
+    #treeContainer {
+      margin-top: 1.5rem;
+      width: 100%;
+      height: 400px;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 4px;
+    }
+
+    #freqChart {
+      width: 100%;
+      max-height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Huffman 编码可视化工具</h1>
+  </header>
+  <div class="container">
+    <aside>
+      <h3>导航</h3>
+      <details open>
+        <summary>内容跳转</summary>
+        <a href="#input">输入与操作</a>
+        <a href="#original">原文</a>
+        <a href="#encoded">编码</a>
+        <!-- <a href="#decoded">译码结果</a> -->
+        <a href="#frequency">字符频率</a>
+        <a href="#codeMap">编码表</a>
+        <a href="#chart">频率图表</a>
+        <a href="#tree">Huffman 树</a>
+      </details>
+            <details open>
+        <summary>补充</summary>
+        <p style="margin: 0.5rem 0 0.5rem 1rem; font-size: 0.9rem; color: #555;">
+          本工具用于 Huffman 编码的演示、编码结构可视化与字符统计分析。
+          点击上面项目跳转到对应区域👆
+        </p>
+        <div style="margin: 1rem 0 0 1rem; font-size: 0.92rem; color: #666;">
+            作者：
+            <a href="https://thewindsing.blog/about/index.html" target="_blank" style="color: var(--primary); text-decoration: underline;">Zeng Wenxing</a><br>
+          个人博客：<a href="https://thewindsing.blog" target="_blank" style="color: var(--primary); text-decoration: underline;">thewindsing.blog</a><br>
+          项目地址：<a href="https://github.com/TheWindSing/HuffView" target="_blank" style="color: var(--primary); text-decoration: underline;">HuffView</a>
+        </div>
+      </details>
+    </aside>
+    <main>
+      <section id="input">
+        <h2>输入与操作</h2>
+        <textarea id="inputText" placeholder="请输入要编码或译码的文本或01串...">huffman coding example</textarea>
+        <br>
+        <button class="btn" onclick="encodeText()">编码</button>
+        <button class="btn" onclick="decodeText()">译码</button>
+        <button class="btn" onclick="copyEncoded()">复制编码</button>
+        <button class="btn" onclick="copyDecoded()">复制译码</button>
+        <button class="btn" onclick="downloadEncoded()">下载编码结果</button>
+        <button class="btn" onclick="downloadDecoded()">下载译码结果</button>
+      </section>
+
+
+      <section id="original" class="section">
+        <h2>原文</h2>
+        <div class="block-text" id="originalText"></div>
+      </section>
+
+      <section id="encoded" class="section">
+        <h2>编码</h2>
+        <div class="block-text" id="encodedText"></div>
+      </section>
+
+      <!-- <section id="decoded" class="section">
+        <h2>译码结果</h2>
+        <div class="block-text" id="decodedText"></div>
+      </section> -->
+
+      <section id="frequency" class="section">
+        <h2>字符频率</h2>
+        <table>
+          <thead><tr><th>字符</th><th>频数</th></tr></thead>
+          <tbody id="freqTable"></tbody>
+        </table>
+      </section>
+
+      <section id="codeMap" class="section">
+        <h2>编码表</h2>
+        <table>
+          <thead><tr><th>字符</th><th>编码</th></tr></thead>
+          <tbody id="codeTable"></tbody>
+        </table>
+      </section>
+
+      <section id="chart" class="section">
+        <h2>字符频率图表</h2>
+        <canvas id="freqChart"></canvas>
+      </section>
+
+      <section id="tree" class="section">
+        <h2>Huffman 树结构</h2>
+        <div id="treeContainer"></div>
+      </section>
+    </main>
+  </div>
+  <script>
+    let chartInstance;
+    let treeData = {};
+
+    async function encodeText() {
+      const text = document.getElementById("inputText").value.trim();
+      if (!text) return alert("请输入文本");
+
+      const res = await fetch("/huffman", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await res.json();
+
+      if (data.error) return alert("错误: " + data.error);
+
+      treeData = data.tree || {};
+
+      document.getElementById("originalText").textContent = text;
+      document.getElementById("encodedText").textContent = data.encoded;
+      // document.getElementById("decodedText").textContent = data.decoded;
+
+      const freqTable = document.getElementById("freqTable");
+      const codeTable = document.getElementById("codeTable");
+      freqTable.innerHTML = codeTable.innerHTML = "";
+
+      const labels = [], values = [];
+
+      Object.entries(data.frequency).forEach(([char, freq]) => {
+        const name = char === ' ' ? '(空格)' : char;
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${name}</td><td>${freq}</td>`;
+        freqTable.appendChild(row);
+        labels.push(name);
+        values.push(freq);
+      });
+
+      Object.entries(data.codeMap).forEach(([char, code]) => {
+        const name = char === ' ' ? '(空格)' : char;
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${name}</td><td>${code}</td>`;
+        codeTable.appendChild(row);
+      });
+
+      drawChart(labels, values);
+      drawTree(treeData);
+    }
+
+    async function decodeText() {
+      const encoded = document.getElementById("inputText").value.trim();
+      if (!encoded) return alert("请输入编码");
+
+      if (!treeData || Object.keys(treeData).length === 0) {
+        return alert("请先进行一次编码操作，以生成 Huffman 树结构");
+      }
+
+      const res = await fetch("/decode", { 
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ encoded, tree: treeData })
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+          alert("译码失败: " + data.error);
+      } else {    
+          document.getElementById("originalText").textContent = data.decoded; 
+          document.getElementById("encodedText").textContent = document.getElementById("inputText").value; 
+      }
+    }
+
+    function drawChart(labels, values) {
+      const ctx = document.getElementById('freqChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '字符频率',
+            data: values,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: 20
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    function drawTree(root) {
+      if (!root || Object.keys(root).length === 0) return;
+      let nodes = [], edges = [];
+      let idCounter = 0;
+
+      function traverse(node, parentId = null) {
+        const thisId = idCounter++;
+        const label = node.char !== null ? `${node.char} (${node.freq})` : `${node.freq}`;
+        nodes.push({ id: thisId, label });
+        if (parentId !== null) edges.push({ from: parentId, to: thisId });
+        if (node.left) traverse(node.left, thisId);
+        if (node.right) traverse(node.right, thisId);
+      }
+
+      traverse(root);
+      const container = document.getElementById('treeContainer');
+      const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+      const options = {
+        layout: { hierarchical: { direction: 'UD', sortMethod: 'directed' } },
+        physics: false
+      };
+      new vis.Network(container, data, options);
+    }
+
+    function copyEncoded() {
+      const text = document.getElementById("encodedText").textContent;
+      navigator.clipboard.writeText(text).then(() => alert("编码结果已复制！"));
+    }
+
+    function downloadEncoded() {
+      const text = document.getElementById("encodedText").textContent;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'encoded.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copyDecoded() {
+      const text = document.getElementById("originalText").textContent;
+      if (!text) return alert("没有译码结果可复制");
+      navigator.clipboard.writeText(text).then(() => alert("译码结果已复制！"));
+    }
+
+    function downloadDecoded() {
+      const text = document.getElementById("originalText").textContent;
+      if (!text) return alert("没有译码结果可下载");
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'decoded.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
