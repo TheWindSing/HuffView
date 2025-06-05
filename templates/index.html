@@ -141,6 +141,7 @@
         <a href="#original">原文</a>
         <a href="#encoded">编码</a>
         <!-- <a href="#decoded">译码结果</a> -->
+        <a href="#efficiency">编码效率</a> 
         <a href="#frequency">字符频率</a>
         <a href="#codeMap">编码表</a>
         <a href="#chart">频率图表</a>
@@ -188,6 +189,32 @@
         <h2>译码结果</h2>
         <div class="block-text" id="decodedText"></div>
       </section> -->
+
+      <section id="efficiency" class="section">
+        <h2>编码效率</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>原始比特数</th>
+              <th>编码后比特数</th>
+              <th>压缩率 (%)</th>
+              <th>熵 (H)</th>
+              <th>平均码长 (L)</th>
+              <th>编码效率 (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="originalBits">-</td>
+              <td id="encodedBits">-</td>
+              <td id="compressionRate">-</td>
+              <td id="entropy">-</td>
+              <td id="avgLength">-</td>
+              <td id="codingEfficiency">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
       <section id="frequency" class="section">
         <h2>字符频率</h2>
@@ -239,6 +266,14 @@
       document.getElementById("originalText").textContent = text;
       document.getElementById("encodedText").textContent = data.encoded;
       // document.getElementById("decodedText").textContent = data.decoded;
+
+      // 更新编码效率
+      document.getElementById("originalBits").textContent = data.originalBits;
+      document.getElementById("encodedBits").textContent = data.encodedBits;
+      document.getElementById("compressionRate").textContent = data.compressionRate;
+      document.getElementById("entropy").textContent = data.entropy;
+      document.getElementById("avgLength").textContent = data.averageLength;
+      document.getElementById("codingEfficiency").textContent = data.codingEfficiency + "%";
 
       const freqTable = document.getElementById("freqTable");
       const codeTable = document.getElementById("codeTable");

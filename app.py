@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, render_template
 # import subprocess 
 import os
 import sys
+import math
 
 
 # ================================
@@ -79,6 +80,17 @@ def decode_text(encoded, tree):
     return result
 
 
+def calculate_entropy_and_avg_length(freq, code_map):
+    total = sum(freq.values())
+    entropy = 0.0
+    avg_length = 0.0
+    for char in freq:
+        p = freq[char] / total
+        l = len(code_map[char])
+        entropy += -p * math.log2(p)
+        avg_length += p * l
+    return round(entropy, 4), round(avg_length, 4), round(entropy / avg_length * 100, 2)
+
 # ================================
 # Flask 路由
 # ================================
@@ -99,13 +111,38 @@ def huffman_api():
     encoded = encode_text(text, code_map)
     decoded = decode_text(encoded, tree)
 
+    # return jsonify({
+    #     'frequency': freq,
+    #     'codeMap': code_map,
+    #     'encoded': encoded,
+    #     'decoded': decoded,
+    #     'tree': serialize_tree(tree) 
+    # })
+    
+    # ===== 计算编码效率 =====
+    original_bits = len(text) * 8                 # 原始比特数 = 文本长度 * 8
+    encoded_bits = len(encoded)                    # 编码后比特数 = 二进制串长度
+    if original_bits > 0:
+        compression_rate = round((original_bits - encoded_bits) / original_bits * 100, 2)
+    else:
+        compression_rate = 0.0
+
+    entropy, avg_len, efficiency = calculate_entropy_and_avg_length(freq, code_map)
+
     return jsonify({
-        'frequency': freq,
+        'frequency': freq, 
         'codeMap': code_map,
         'encoded': encoded,
-        'decoded': decoded,
-        'tree': serialize_tree(tree) 
+        'decoded': decode_text(encoded, tree),
+        'tree': serialize_tree(tree),
+        'originalBits': original_bits,
+        'encodedBits': encoded_bits,
+        'compressionRate': compression_rate,
+        'entropy': entropy,
+        'averageLength': avg_len,
+        'codingEfficiency': efficiency
     })
+
 def serialize_tree(node):
     if node is None:
         return None
